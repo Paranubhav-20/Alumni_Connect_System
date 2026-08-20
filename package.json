@@ -2,11 +2,11 @@
   "name": "alumini-contact-minor-project-main",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
-    "seed": "node index.js",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed": "node scripts/seed.js",
     "reset": "node reset-db.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
