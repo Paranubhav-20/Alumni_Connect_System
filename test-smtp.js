@@ -13,7 +13,7 @@
  */
 
 const nodemailer = require("nodemailer");
-const { sendOTP } = require("./otpService");
+const { sendOTP } = require("./src/services/otpService");
 
 const target = process.argv[2];
 if (!target) {

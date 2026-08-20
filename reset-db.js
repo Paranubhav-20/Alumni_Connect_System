@@ -12,7 +12,7 @@
  *   but resolve to a deleted user).
  *
  * Notes:
- * - The in-memory MongoDB fallback inside app.js is fresh on every
+ * - The in-memory MongoDB fallback inside src/server.js is fresh on every
  *   restart anyway, so this script is only useful with a real local Mongo.
  */
 
@@ -50,7 +50,7 @@ main().catch((err) => {
   console.error("\nReset failed:", err.message);
   if (err.message.includes("ECONNREFUSED") || err.message.includes("buffering")) {
     console.error("\nNo local MongoDB is running on", MONGO_URL);
-    console.error("If you are using the in-memory fallback in app.js,");
+    console.error("If you are using the in-memory fallback in src/server.js,");
     console.error("just stop the server and start it again — that already");
     console.error("gives you an empty users list.");
   }

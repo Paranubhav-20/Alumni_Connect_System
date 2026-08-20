@@ -260,13 +260,13 @@ const Question = require("./models/Question");
 const multer = require("multer");
 const fs = require("fs");
 
-const { sendOTP, verifyOTP, sendWelcomeEmail } = require("./otpService");
+const { sendOTP, verifyOTP, sendWelcomeEmail } = require("./services/otpService");
  
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
-app.use(express.static("public"));
+app.set("views", path.join(__dirname, "..", "views"));
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 const { MongoMemoryServer } = require("mongodb-memory-server");
 
@@ -292,8 +292,8 @@ async function main() {
   }
 
   // Auto-seed if empty (memory server starts fresh each time)
-  const companiesData = require("./data");
-  const questionsData = require("./question");
+  const companiesData = require("./data/data");
+  const questionsData = require("./data/question");
   if (await Company.countDocuments() === 0) {
     await Company.insertMany(companiesData);
     console.log(`Seeded ${companiesData.length} companies`);
@@ -473,7 +473,7 @@ app.post("/resend-otp", async (req, res) => {
 });
 
 // =========== PROFILE PHOTO UPLOAD ===========
-const AVATAR_DIR = path.join(__dirname, "public", "uploads", "avatars");
+const AVATAR_DIR = path.join(__dirname, "..", "public", "uploads", "avatars");
 if (!fs.existsSync(AVATAR_DIR)) fs.mkdirSync(AVATAR_DIR, { recursive: true });
 
 const avatarStorage = multer.diskStorage({
@@ -504,7 +504,7 @@ app.post("/profile/photo", isLoggedIn, (req, res) => {
     // Delete previous file if it lived under our avatars folder
     const old = req.user.photo;
     if (old && old.startsWith("/uploads/avatars/")) {
-      const oldFs = path.join(__dirname, "public", old);
+      const oldFs = path.join(__dirname, "..", "public", old);
       fs.unlink(oldFs, () => {}); // best-effort
     }
     await User.findByIdAndUpdate(req.user._id, { photo: newPath });
@@ -516,7 +516,7 @@ app.post("/profile/photo", isLoggedIn, (req, res) => {
 app.post("/profile/photo/remove", isLoggedIn, async (req, res) => {
   const old = req.user.photo;
   if (old && old.startsWith("/uploads/avatars/")) {
-    fs.unlink(path.join(__dirname, "public", old), () => {});
+    fs.unlink(path.join(__dirname, "..", "public", old), () => {});
   }
   await User.findByIdAndUpdate(req.user._id, { photo: "" });
   res.redirect("/profile");
@@ -606,8 +606,8 @@ app.get("/landing", isLoggedIn, async (req, res) => {
     Company.countDocuments(),
     Question.countDocuments()
   ]);
-  const resumeCount = require("./resumeTemplates").length;
-  const mockTestCount = require("./mockTests").TESTS.length;
+  const resumeCount = require("./lib/resumeTemplates").length;
+  const mockTestCount = require("./lib/mockTests").TESTS.length;
   res.render("landing", {
     user: req.user,
     stats: { companiesCount, questionsCount, resumeCount, mockTestCount }
@@ -661,8 +661,8 @@ app.post("/profile", isLoggedIn, async (req, res) => {
 
 // List all companies
 app.get("/companies", async (req, res) => {
-  delete require.cache[require.resolve("./data")];
-  const companiesData = require("./data");
+  delete require.cache[require.resolve("./data/data")];
+  const companiesData = require("./data/data");
   for (const c of companiesData) {
     await Company.updateOne(
       { companyName: c.companyName },
@@ -728,7 +728,7 @@ app.get("/resources/dsa", isLoggedIn, (req, res) => {
     });
 });
 
-const resumeTemplates = require("./resumeTemplates");
+const resumeTemplates = require("./lib/resumeTemplates");
 
 app.get("/resources/resume", isLoggedIn, (req, res) => {
     res.render("resumeTemplates", { templates: resumeTemplates });
@@ -757,7 +757,7 @@ app.get("/resources/mock-interviews", isLoggedIn, (req, res) => {
 });
 // =========== MOCK TEST ROUTES ===========
 const { TESTS: MOCK_TESTS, getTest: getMockTest, resolveQuestions: resolveMockQuestions }
-  = require("./mockTests");
+  = require("./lib/mockTests");
 
 // Test list page
 app.get("/mock-test", isLoggedIn, (req, res) => {
